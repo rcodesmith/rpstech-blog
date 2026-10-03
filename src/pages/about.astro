@@ -1,0 +1,14 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const [about] = await getCollection('pages');
+const { Content } = await render(about);
+---
+
+<BaseLayout title="About | Ron Smith">
+  <article>
+    <h1>{about.data.title}</h1>
+    <Content />
+  </article>
+</BaseLayout>

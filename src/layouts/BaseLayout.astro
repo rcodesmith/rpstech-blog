@@ -1,0 +1,44 @@
+---
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <style>
+      body {
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        font-family: system-ui, sans-serif;
+        line-height: 1.6;
+      }
+      nav a {
+        margin-right: 1rem;
+      }
+      img {
+        max-width: 100%;
+      }
+      pre {
+        overflow-x: auto;
+        padding: 1rem;
+        background: #f4f4f4;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/blog/">Blog</a>
+      <a href="/about/">About</a>
+    </nav>
+    <hr />
+    <slot />
+  </body>
+</html>
