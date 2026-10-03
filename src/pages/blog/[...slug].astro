@@ -24,7 +24,9 @@ const { Content } = await render(post);
     )}
     <Content />
     {post.data.tags.length > 0 && (
-      <p>Tags: {post.data.tags.join(', ')}</p>
+      <p class="tags">
+        Tags: {post.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+      </p>
     )}
   </article>
 </BaseLayout>
