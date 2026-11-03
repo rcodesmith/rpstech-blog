@@ -12,7 +12,7 @@ const posts = allPosts.sort((a, b) => (b.data.date?.valueOf() ?? 0) - (a.data.da
     {posts.map((post) => (
       <li>
         <a href={`/blog/${post.id.replace(/\/index$/, '')}/`}>{post.data.title}</a>
-        {post.data.date && <small> — {post.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</small>}
+        {post.data.date && <small> — {post.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}</small>}
       </li>
     ))}
   </ul>
