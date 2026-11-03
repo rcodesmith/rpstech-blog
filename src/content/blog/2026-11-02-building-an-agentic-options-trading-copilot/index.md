@@ -18,11 +18,7 @@ So I decided to build my own.
 The result is an agentic options trading copilot that helps me manage trading campaigns, monitor positions and risk, identify opportunities, and make better-informed trading decisions.
 
 But this project is about more than building a trading application. It illustrates two significant changes brought about by AI: entirely new capabilities that can be incorporated
-into software products, and a fundamentally different way of building software itself.
-
-On the product side, AI makes it practical to incorporate capabilities like contextual reasoning, natural language interaction, image recognition, and
-autonomous agents into applications. On the development side, AI has fundamentally changed how I approach software engineering, from
-architecture and implementation to testing and deployment.
+into software products, and a significant shift in how software is developed.
 
 I'll walk through the application's architecture and capabilities, the technologies behind it, and my experience building it with AI. Along the way,
 I'll share some observations about what this means for software development more broadly
@@ -36,7 +32,7 @@ more recently, [LossDog](https://lossdog.com/) ([trading YouTube channel](https:
 and [Grow Your Pile](https://www.growyourpile.com/).
 
 Options trading requires frequent management of positions, daily in many cases.  This is time-consuming, and skipping a day can
-lead to losses and missed opportunities.  Fortunately, a significant amount can be automated, and reasoning models can now help with the parts that used to need
+lead to losses and missed opportunities.  Fortunately, a significant amount can be automated, and reasoning models can now help some with the parts that used to need
 my full attention.
 
 I tried out some existing products for managing trades and tracking profits, but they just didn't work the way I wanted, or the interface
@@ -83,7 +79,7 @@ technologies that only became practical in the last few years.
 
 ## Products and features made possible by AI
 
-As the table shows, several major features in this project have only become possible in the last few years.  As builders, we've
+As the table shows, several major features in this project have only become practical in the last few years.  As builders, we've
 been handed entirely new categories of capabilities that can be incorporated into products:
 
 - **Non-deterministic reasoning and contextual understanding:** Interpreting complex situations, evaluating alternatives, and making context-aware recommendations.
@@ -138,7 +134,9 @@ This is familiar territory from leading software development teams, but now I'm 
   I hear people talk about setting up agents to do large swaths of work while they're away. Except for niche use cases like code conversion and prototypes, my experience is that a
   maintainable, performant, scalable, and secure implementation requires regular direction and review. Giving agents free rein just means more rework later.
   So my time is still the limiting factor, and software engineering is a ways from
-  being fully automated. At the same time, when I hear people say they haven't seen much benefit from agentic development or that this is a fad, I feel like we're living in alternate universes. I wonder how much of the difference comes down to how the agents are set up and directed.
+  being fully automated.
+
+  At the same time, when I hear people say they haven't seen much benefit from agentic development or that this is a fad, I feel like we're living in alternate universes. I wonder how much of the difference comes down to how the agents are set up and directed.
 
 - **Software development best practices matter even more than before.**
 
@@ -161,9 +159,12 @@ This is familiar territory from leading software development teams, but now I'm 
 I built the options trading copilot to keep up with my positions without giving up more of my day, and it's now how I manage my trades. It's also a solid platform
 for building additional features.
 
-More broadly, we have new kinds of technology to build with and new tools to build them. The opportunity is in knowing when they're appropriate and how best to use them.
-Software development is changing rapidly; what I describe here
-is a point in time, and I expect how we build software to change significantly in the months and years ahead.
+More broadly, we've entered a period where a much smaller team, potentially even one person, can build sophisticated software that previously required a larger team.
+At the same time, knowing what to build, how to architect it, and how to direct and validate the work remains critical.
 
-If you're working on something similar, I'd like to hear about it.
+The opportunity lies in understanding what's now possible and knowing how to turn those capabilities into useful, reliable products.
+
+Software development is changing rapidly; what I describe here is a point in time, and I expect how we build software to change significantly in the months and years ahead.
+
+If you're working on something similar, I'd like to hear about it.  You can reach me on [LinkedIn](https://www.linkedin.com/in/rcodesmith/) or by [email](mailto:ron@rpstechnologies.net).
 
