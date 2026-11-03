@@ -10,11 +10,12 @@ tags:
   - "options-trading"
 ---
 
+![Glowing iron condor profit and loss curve, shifting from amber to violet, with a marker on the current position, against a dark abstract background of data streams](images/cover.jpg)
+
 I trade options, and managing positions is close to a daily job. I couldn't find software that worked the way I wanted, so I built my own: the options trading copilot,
 which tracks my positions, flags what needs attention, and helps me work out what to do next.
 
-It's also a case study in applying generative AI to a real domain. The main lesson is that the hard part isn't adding AI, but knowing where it belongs.
-Deterministic code handles the algorithms and rules, and AI takes on the judgment calls that rules can't express.
+It's also a case study in applying generative AI to a real domain. Most of the system is conventional software: deterministic code handles the algorithms and rules, and AI takes on the judgment calls that rules can't express.
 AI also changed how the system got built: this wouldn't have been practical for one person a few years ago.
 Here's what I built, the technologies behind it, how AI development changed along the way, and what I took from it.
 
@@ -116,11 +117,12 @@ Currently, I'm playing the role of product manager, architect, and team lead.
 - **Agents still need software engineers to direct them and review their work.**
 
   Claude can usually do the task, but it can't yet be trusted to do it unsupervised. I set priorities and goals, ask critical questions that frequently change the answer, redirect
-  it when it's on a track I don't want, and review the results. Before implementation starts, I have Claude write out its questions and assumptions, which I answer and review. I hear
-  people talk about setting up agents to do large swaths of work while they're away. Except for niche use cases like code conversion and prototypes, my experience is that a
+  it when it's on a track I don't want, and review the results. Before implementation starts, I have Claude write out its questions and assumptions, which I answer and review.
+
+  I hear people talk about setting up agents to do large swaths of work while they're away. Except for niche use cases like code conversion and prototypes, my experience is that a
   maintainable, performant, scalable, and secure implementation requires regular direction and review. Giving agents free rein just means more rework later.
   So my time is still the limiting factor, and software engineering is a ways from
-  being fully automated. But when I hear people say they haven't seen much benefit from agentic development or that this is a fad, that hasn't been my experience at all.
+  being fully automated. At the same time, when I hear people say they haven't seen much benefit from agentic development or that this is a fad, I feel like we're living in alternate universes. I wonder how much of the difference comes down to how the agents are set up and directed.
 
 - **Software development best practices matter even more than before.**
 
@@ -131,7 +133,7 @@ Currently, I'm playing the role of product manager, architect, and team lead.
 
 - **Agents need a "software factory": an environment where they can work autonomously, within bounds.**
 
-  That takes a well-defined process, clear instructions, pipelines that give agents feedback, and a repeatable, isolated setup with the right tools and proper guardrails.
+  Building a software factory takes a well-defined process, clear instructions, pipelines that give agents feedback, and a repeatable, isolated setup with the right tools and proper guardrails.
   Some of this was good practice before agents, but not really
   necessary, because human judgment and ingenuity could smooth over the rough edges. Agents can't be relied on for that.
   My setup for this project includes clearly documented process and standards, robust CI/CD pipelines, multiple

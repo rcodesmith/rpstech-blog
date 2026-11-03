@@ -1,0 +1,145 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, postExcerpt, postThumbnail, postUrl } from '../lib/posts';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+}
+
+const [featured, ...rest] = Astro.props.posts;
+const featuredImage = featured && postThumbnail(featured);
+---
+
+{featured && (
+  <article class="featured">
+    {typeof featuredImage === 'string' && <img class="hero" src={featuredImage} alt="" />}
+    {featuredImage && typeof featuredImage !== 'string' && (
+      <Image class="hero" src={featuredImage} width={1344} alt="" />
+    )}
+    <small>Latest{featured.data.date && ` · ${formatDate(featured.data.date)}`}</small>
+    <a class="title" href={postUrl(featured)}>{featured.data.title}</a>
+    <p class="excerpt">{postExcerpt(featured)}</p>
+  </article>
+)}
+
+<ul class="rows">
+  {rest.map((post) => {
+    const image = postThumbnail(post);
+    return (
+      <li class="row">
+        <div class="text">
+          {post.data.date && <small>{formatDate(post.data.date)}</small>}
+          <a class="title" href={postUrl(post)}>{post.data.title}</a>
+          <p class="excerpt">{postExcerpt(post)}</p>
+        </div>
+        {typeof image === 'string' && <img class="thumb" src={image} alt="" />}
+        {image && typeof image !== 'string' && <Image class="thumb" src={image} width={272} alt="" />}
+      </li>
+    );
+  })}
+</ul>
+
+<style>
+  .featured,
+  .row {
+    position: relative;
+  }
+
+  /* Makes the whole post clickable from its one title link. */
+  .title::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .title {
+    display: block;
+    margin: 0.15rem 0 0.3rem;
+    font-family: var(--font-head);
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--fg);
+    text-decoration: none;
+  }
+
+  .featured:hover .title,
+  .row:hover .title {
+    color: var(--accent);
+  }
+
+  .excerpt {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--fg-muted);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .featured {
+    margin-bottom: 1.25rem;
+  }
+
+  .featured .title {
+    font-size: 1.5rem;
+  }
+
+  .featured .excerpt {
+    -webkit-line-clamp: 3;
+  }
+
+  .hero {
+    display: block;
+    width: 100%;
+    height: 240px;
+    margin-bottom: 0.6rem;
+    object-fit: cover;
+    object-position: top;
+    background: #fff;
+  }
+
+  .rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.15rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .thumb {
+    flex: none;
+    width: 136px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: #fff;
+  }
+
+  @media (max-width: 34rem) {
+    .row {
+      gap: 1rem;
+    }
+
+    .thumb {
+      width: 88px;
+      height: 64px;
+    }
+  }
+</style>

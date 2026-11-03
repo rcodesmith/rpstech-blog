@@ -6,12 +6,17 @@ categories:
   - "tools"
 tags: 
   - "vagrant"
+  - "daemonset"
+  - "minikube"
+  - "kubernetes"
 ---
+
+![Container ship stacked with containers at a port at night, with a tugboat alongside](images/k8s-cover.jpeg)
 
 I had a need to automatically install software on each node in a Kubernetes cluster. In my case, security scanning software. Kubernetes can start new nodes to scale up automatically, destroy nodes when no longer needed, and create/destroy nodes as part of automatic Kubernetes upgrades. For this reason, the mechanism to install this software has be integrated into Kubernetes itself, so when Kubernetes creates nodes, it automatically installs whatever additional software is needed.  
   
 
-I came across a clever solution using Kubernetes DaemonSets and the Linux [nsenter](https://man7.org/linux/man-pages/man1/nsenter.1.html) command, described [here](https://medium.com/@patnaikshekhar/initialize-your-aks-nodes-with-daemonsets-679fa81fd20e). The solution consists of:
+I came across a clever solution using Kubernetes [DaemonSets](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) and the Linux [nsenter](https://man7.org/linux/man-pages/man1/nsenter.1.html) command, described [here](https://medium.com/@patnaikshekhar/initialize-your-aks-nodes-with-daemonsets-679fa81fd20e). The solution consists of:
 
 - A Kubernetes DaemonSet which ensures that each server in the cluster (or some subset of them you specify) runs a single copy of an installer pod.
 - The installer pod runs an installer docker image which copies the installer and other needed files onto the node, and runs the installer script you provide via nsenter so the script runs within the host namespace instead of the docker container
@@ -22,7 +27,7 @@ The DaemonSet runs a given pod, in our case the installer pod which runs the ins
 Shekhar Patnaik has implemented and packaged this pattern up into a Docker image and sample DaemonSet. The project is [here (AKSNodeInstaller)](https://github.com/patnaikshekhar/AKSNodeInstaller).  
   
 
-There's a couple additional things I needed which the above project doesn't do
+There's a couple additional things I needed which the above project doesn't do:
 
 - The ability to clean up installed software before a Kubernetes node is destroyed; In my case uninstalling packages and de-registering agents
 - Support for copying files onto the node for installation (e.g. debian package files)
@@ -39,7 +44,7 @@ To support registering a cleanup script to be called before a node is destroyed,
 The fragment of the sample [DaemonSet manifest](https://github.com/rcodesmith/KubeNodeInstaller/blob/master/k8s/daemonset.yaml) showing the preStop hook and the install and cleanup scripts volume mount looks like this:  
   
 
-```
+```yaml
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -86,7 +91,7 @@ spec:
 
 The runCleanup.sh script will run a cleanup.sh script you provide on the host via nsenter. You supply the cleanup.sh script via a ConfigMap that is mounted into the pod as a volume, same as the install.sh script. Following is an example ConfigMap:
 
-```
+```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -116,8 +121,7 @@ To use this, supply your own Docker image which copies whatever additional insta
 
 For example:
 
-```
-
+```dockerfile
 FROM rcodesmith/kubenodeinstaller
 COPY files /files
 ```
@@ -152,7 +156,7 @@ Following are install instructions for Mac using Homebrew, but you can also use 
 
 Install VirtualBox, extensions, and Vagrant:  
 
-```
+```shell
 brew install Caskroom/cask/virtualbox
 brew install Caskroom/cask/virtualbox-extension-pack
 brew install vagrant
@@ -165,9 +169,9 @@ You can find boxes at: [https://app.vagrantup.com/boxes/search](https://app.vagr
   
 I'm using [this Ubuntu box](https://app.vagrantup.com/ubuntu/boxes/focal64).  
   
-To get started with a Vagrant box
+To get started with a Vagrant box:
 
-```
+```shell
 vagrant init ubuntu/focal64
 ```
 
@@ -176,7 +180,7 @@ The above command will generate a Vagrantfile in the current directory which des
 You might need to add more memory for the VM in the Vagrantfile:  
   
 
-```
+```ruby
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
 #    vb.gui = true
@@ -189,7 +193,7 @@ You might need to add more memory for the VM in the Vagrantfile:
   
 In the Vagrantfile, use the Vagrant shell provisioner to install Minikube, Docker, and kubectl. We're using the Minikube 'none' driver which will cause it to run Kubernetes in the current server (the Vagrant VM). And finally, start minikube.
 
-```
+```ruby
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
@@ -212,8 +216,10 @@ In the Vagrantfile, use the Vagrant shell provisioner to install Minikube, Docke
 
 To verify Minikube is running in the VM:
 
-```
-> sudo minikube statusminikube
+```text
+> sudo minikube status
+
+minikube
 type: Control Plane
 host: Running
 kubelet: Running
@@ -223,14 +229,14 @@ kubeconfig: Configured
 
 To start Minikube if it isn’t running:
 
-```
+```shell
 sudo minikube start --driver=none
 ```
 
 Now that Minikube is running, you can interact with the Kubernetes cluster using Kubectl.  
   
 
-```
+```text
 > sudo kubectl get nodes
  
 NAME STATUS ROLES AGE VERSION
@@ -240,21 +246,25 @@ ubuntu-focal Ready control-plane,master 10d v1.21.2
 Now, apply your ConfigMap and DaemonSet. Following is an example from [https://github.com/rcodesmith/KubeNodeInstaller](https://github.com/rcodesmith/KubeNodeInstaller)  
   
 
-```
+```shell
 # Change to project directory mounted in VM
-cd /vagrant# Apply ConfigMap and DaemonSet
+cd /vagrant
+
+# Apply ConfigMap and DaemonSet
 sudo kubectl apply -f k8s/sampleconfigmap.yaml
 sudo kubectl apply -f k8s/daemonset.yaml
 
 # The DaemonSet's pods should be running, one per server (1 here). Check:
-sudo kubectl get pods -n node-installer# Look at pod logs, look for errors:
+sudo kubectl get pods -n node-installer
+
+# Look at pod logs, look for errors:
 sudo kubectl logs daemonset/installer -c installer -n node-installer
 ```
 
 My DaemonSet and Docker image had an install file which should have been copied to the VM.  
 Additionally, the install script wrote to /vagrant/samplefile.txt. Check for these:
 
-```
+```text
 > ls -l /vagrant/files/sample_install_file.txt
 > ls -l /vagrant/samplefile.txt
 ```
@@ -262,7 +272,7 @@ Additionally, the install script wrote to /vagrant/samplefile.txt. Check for the
 The cleanup script should delete /vagrant/samplefile.txt. Let’s test this by deleting the DaemonSet, then verifying the file is deleted.  
   
 
-```
+```text
 > sudo kubectl delete -f k8s/daemonset.yaml
 > ls -l /vagrant/samplefile.txt
 ls: cannot access '/vagrant/samplefile.txt': No such file or directory
@@ -270,6 +280,6 @@ ls: cannot access '/vagrant/samplefile.txt': No such file or directory
 
 Now that we tested everything, to destroy the VM and everything in it, run following back on your workstation:
 
-```
+```shell
 vagrant destroy
 ```

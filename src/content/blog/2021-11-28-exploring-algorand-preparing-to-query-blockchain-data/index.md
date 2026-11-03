@@ -54,34 +54,48 @@ We use Vagrant to automate the creation and setup of the Google VM. Vagrant can 
 To create a Google Cloud VM, you’ll also need to install the [Vagrant Google plugin](https://github.com/mitchellh/vagrant-google).  
   
 
-```
+```shell
 vagrant plugin install vagrant-google
 ```
 
 Following is a sample [Vagrantfile](https://github.com/rcodesmith/algorand-indexer-server/blob/master/Vagrantfile) to create the VM.  
   
 
-```
+```ruby
 Vagrant.configure("2") do |config|
-  config.vm.box = "google/gce"# Provider to set up VM in Google Cloud
+  config.vm.box = "google/gce"
+
+# Provider to set up VM in Google Cloud
   config.vm.provider :google do |google, override|
     google.google_project_id = "<Your google cloud project ID here>"
-    google.google_json_key_location = "<Path to JSON key here>"    # 2vCPU, 4GB
-    google.machine_type='e2-medium'    # Use Ubuntu 20.04
-    google.image_family = 'ubuntu-2004-lts'    google.name = 'algorand-index-server'
+    google.google_json_key_location = "<Path to JSON key here>"
+
+    # 2vCPU, 4GB
+    google.machine_type='e2-medium'
+
+    # Use Ubuntu 20.04
+    google.image_family = 'ubuntu-2004-lts'
+
+    google.name = 'algorand-index-server'
   
     # Allocate 400 GB for disk.  You may need more if running
     # mainnet node
     google.disk_size = '400'
       
     # Tags to apply to server
-    google.tags = ['algorand-indexer']    override.ssh.username = "<username you want to create on server>"
+    google.tags = ['algorand-indexer']
+
+    override.ssh.username = "<username you want to create on server>"
     override.ssh.private_key_path = "<local path to your SSH private key you want to use>"
-  end  # Copy docker-compose.yml and Algorand Node config files to VM
+  end
+
+  # Copy docker-compose.yml and Algorand Node config files to VM
   config.vm.provision "file", source: "./docker-compose.yml", destination: "docker-compose.yml"
-  config.vm.provision "file", source: "./node-config.json", destination: "config.json"  # Execute setup script on the VM
+  config.vm.provision "file", source: "./node-config.json", destination: "config.json"
+
+  # Execute setup script on the VM
   config.vm.provision "shell", path: "setup.sh"
-end
+  end
 ```
 
 The Vagrantfile will create the VM in Google Cloud, set up an SSH user on it, copy docker-compose.yml and node-config.json to the VM, and finally run the setup.sh script to do the rest of the setup.  
@@ -93,7 +107,7 @@ Note: you’ll need to substitute the <…> in the file with your own values.
 The [setup.sh](https://github.com/rcodesmith/algorand-indexer-server/blob/master/setup.sh) file, copied to the server and executed by Vagrant, provisions the server, installing all the needed packages, setting up directories and populating them, and finally runs the services in the docker-compose.yml:  
   
 
-```
+```shell
 #!/bin/sh
 
 #
@@ -152,7 +166,7 @@ sudo docker-compose up -d
 
 Following is the docker-compose.yml which sets up all of the above containers. Comments describe each element.
 
-```
+```yaml
 version: "2.4"
 services:
   # Algorand node.  Can't use catchup mode, so takes a long time
@@ -207,7 +221,7 @@ services:
 
 The Indexer is the one component where we’re not using an existing Docker image. I forked the indexer repo and added a [Dockerfile](https://github.com/rcodesmith/indexer/blob/rcodesmith/v1/Dockerfile):
 
-```
+```dockerfile
 FROM golang:alpine
 
 # Dependencies
@@ -235,7 +249,7 @@ Now that we’ve reviewed everything, it’s time to create the server and start
 To do everything, run the following in the [algorand-indexer-server](https://github.com/rcodesmith/algorand-indexer-server) top directory:  
   
 
-```
+```shell
 vagrant up --provider=google
 ```
 
@@ -250,7 +264,7 @@ To work with the VM, you’ll need the public IP address that’s been allocated
 You should now be able to SSH into the server, using the username and SSH key you substituted earlier in the Vagrantfile. e.g.  
   
 
-```
+```shell
 ssh ronaldsmith@35.225.156.36
 ```
 
@@ -283,7 +297,7 @@ As these containers run, the Node will continue to receive blocks from the Algor
 To check the status of the node, first, start an interactive bash shell in the algorand-node container:  
   
 
-```
+```shell
 sudo docker-compose exec algorand-node bash
 ```
 
@@ -306,7 +320,7 @@ You can change the network (mainnet or testnet) in the top right. In this case, 
 To check the progress of the Indexer, look at the output of the Indexer container via the docker-exec tail command:  
   
 
-```
+```shell
 sudo docker-compose logs --tail=100 indexer
 ```
 
@@ -320,17 +334,19 @@ The “rounds” correspond to the block numbers.
 Since all of the persistent state, the algorand node data and PostgreSQL storage, is stored in volumes outside the docker containers, you can safely stop everything and start everything back up later on the VM:  
   
 
-```
+```shell
 # To stop and remove all containers:
 sudo docker-compose stop
-sudo docker-compose rm# To start everything back up:
+sudo docker-compose rm
+
+# To start everything back up:
 sudo docker-compose up -d
 ```
 
 When all done, you can delete everything, including the VM, via Vagrant:  
   
 
-```
+```shell
 vagrant destroy
 ```
 

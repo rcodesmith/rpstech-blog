@@ -15,7 +15,7 @@ Ron Smith's software development blog, built with [Astro](https://astro.build). 
 │   ├── content.config.ts    # content collection schemas
 │   ├── layouts/
 │   │   └── BaseLayout.astro
-│   └── pages/                # routes: /, /blog/, /blog/[slug]/, /about/
+│   └── pages/                # routes: /, /blog/, /blog/[slug]/
 └── astro.config.mjs
 ```
 
