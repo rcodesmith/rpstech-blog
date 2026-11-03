@@ -12,12 +12,20 @@ tags:
 
 ![Glowing iron condor profit and loss curve, shifting from amber to violet, with a marker on the current position, against a dark abstract background of data streams](images/cover.jpg)
 
-I trade options, and managing positions is close to a daily job. I couldn't find software that worked the way I wanted, so I built my own: the options trading copilot,
-which tracks my positions, flags what needs attention, and helps me work out what to do next.
+I'm an options trader, and managing my positions is a daily job. I've tried a number of existing products to help manage trading, but none really worked the way I wanted.
+So I decided to build my own.
 
-It's also a case study in applying generative AI to a real domain. Most of the system is conventional software: deterministic code handles the algorithms and rules, and AI takes on the judgment calls that rules can't express.
-AI also changed how the system got built: this wouldn't have been practical for one person a few years ago.
-Here's what I built, the technologies behind it, how AI development changed along the way, and what I took from it.
+The result is an agentic options trading copilot that helps me manage trading campaigns, monitor positions and risk, identify opportunities, and make better-informed trading decisions.
+
+But this project is about more than building a trading application. It illustrates two significant changes brought about by AI: entirely new capabilities that can be incorporated
+into software products, and a fundamentally different way of building software itself.
+
+On the product side, AI makes it practical to incorporate capabilities like contextual reasoning, natural language interaction, image recognition, and
+autonomous agents into applications. On the development side, AI has fundamentally changed how I approach software engineering, from
+architecture and implementation to testing and deployment.
+
+I'll walk through the application's architecture and capabilities, the technologies behind it, and my experience building it with AI. Along the way,
+I'll share some observations about what this means for software development more broadly
 
 ## The impetus
 
@@ -41,8 +49,10 @@ Over time I've added features and made it more 'production ready'.
 
 The diagram shows the overall shape of the system. Read it from top to bottom: the experience tier (the web app), the intelligence tier (deterministic rules and AI), and the data platform.
 
-Blue boxes are ordinary code and rules, and purple boxes use AI. Notice that the AI doesn't calculate P&L, buying power, or anything else that can be done deterministically. 
-It calls the Position Engine, the same code the rest of the app uses.
+Blue boxes represent traditional, deterministic code and rules, and purple boxes use AI. A fundamental design principle is that AI never owns the financial calculations or
+business rules. Those belong
+to the deterministic, testable Position Engine and Risk Alerts. The AI uses that same engine as the rest of the application, and focuses on reasoning,
+interpreting context, and recommendations that can't be codified into rules.
 
 [![Architecture of the options trading copilot: experience, intelligence and data platform tiers, with the intelligence tier split into deterministic rules and AI](/images/options-copilot-architecture.svg)](/images/options-copilot-architecture.svg)
 
@@ -76,13 +86,17 @@ technologies that only became practical in the last few years.
 As the table shows, several major features in this project have only become possible in the last few years.  As builders, we've
 been handed entirely new categories of capabilities that can be incorporated into products:
 
-- Non-deterministic reasoning
-- Advanced natural language
-- Advanced image recognition
-- Agentic tool use
+- **Non-deterministic reasoning and contextual understanding:** Interpreting complex situations, evaluating alternatives, and making context-aware recommendations.
 
-Not only can we build significantly more per day with agentic development, but these new AI capabilities open up entirely new business opportunities: features that provide significant value and just weren't possible or practical
-before.
+- **Natural language interaction:** Understanding user intent and enabling conversational interaction with applications.
+
+- **Image and document understanding:** Extracting and interpreting information from images, documents, charts, and other visual content.
+
+- **Agentic tool use:** Interacting with external systems, invoking tools and APIs, and autonomously executing multi-step workflows.
+
+
+Not only can we build significantly more per day with agentic development, but these new AI capabilities open up entirely new business opportunities: features
+that provide significant value and just weren't possible or practical before.
 
 ## AI evolution
 
@@ -97,8 +111,10 @@ this:
 | **Coding agent** (Claude Code) | 2025 | Reads the codebase, edits files, runs tests and commands, commits | Hands off whole tasks, stays in the loop, reviews the results |
 | **Agentic development with specialized skills** | Late 2025 onward | Does all of the above, loading packaged instructions and scripts when a task calls for them | Decides what to build, sets the architecture and standards, directs the work and reviews it |
 
-Currently, I'm playing the role of product manager, architect, and team lead.  
-
+Currently, I'm playing the role of product manager, architect, and team lead. I'm defining what needs to be built, making architectural decisions,
+breaking work into tasks, and directing AI agents to handle the implementation.
+I'm also reviewing their work, providing direction where needed, and ensuring everything fits together and meets the requirements.
+This is familiar territory from leading software development teams, but now I'm directing AI agents rather than developers.
 
 ## Takeaways
 
