@@ -138,7 +138,7 @@ In summary, to use this solution:
 2. If you need some additional files for your install script, such as debian package files, create a custom Docker Image and include those files in the image via the Docker COPY command. Then use the Docker image in your DaemonSet manifest.
 3. If you have some cleanup steps to execute, provide a cleanup.sh script in the same ConfigMap. The script will be executed on the node before a server is destroyed.
 
-**Testing in VirtualBox and Minikube**
+## Testing in VirtualBox and Minikube
 
 Initially, I was testing out the solution and my install script by creating / destroying Kubernetes node pools in GKE. This wasn't ideal, so I wanted a faster, local way to test. Following is a way to test this out locally using Vagrant, VirtualBox and Minikube.
 
