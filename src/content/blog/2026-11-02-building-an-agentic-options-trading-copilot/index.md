@@ -21,7 +21,7 @@ But this project is about more than building a trading application. It illustrat
 into software products, and a significant shift in how software is developed.
 
 I'll walk through the application's architecture and capabilities, the technologies behind it, and my experience building it with AI. Along the way,
-I'll share some observations about what this means for software development more broadly
+I'll share some observations about what this means for software development more broadly.
 
 ## The impetus
 
