@@ -8,7 +8,7 @@ tags:
 coverImage: "cloud_horse-e1366056121473.jpg"
 ---
 
-[![cloud\_horse](images/cloud_horse-e1366056121473.jpg)](http://rpstechnologies.net/ron/blog/wp-content/uploads/2013/04/cloud_horse-e1366056121473.jpg)
+![cloud\_horse](images/cloud_horse-e1366056121473.jpg)
 
 These are some (old) notes on my experience with looking for an easy Grails hosting solution. This is a continuation of [this](http://rpstechnologies.net/ron/blog/2012/11/easy-grails-hosting/) post where I explored Heroku for Grails hosting.
 

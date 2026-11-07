@@ -21,32 +21,56 @@ The problem: A small performance test program ran a large number of tests, and m
 
 I used a Scala 2.8 snapshot, and fleshed out the code using the Scala interactive shell. First, define a value with the raw output to be processed:
 
-\[bash gutter="false"\] scala> val rawData = """request completed in 10288 msecs | request completed in 10321 msecs | request completed in 10347 msecs | request completed in 10451 msecs | request completed in 10953 msecs | request completed in 11122 msecs ... hundreds of lines ... | request completed in 11672 msecs""" \[/bash\]
+```scala
+scala> val rawData = """request completed in 10288 msecs
+     | request completed in 10321 msecs
+     | request completed in 10347 msecs
+     | request completed in 10451 msecs
+     | request completed in 10953 msecs
+     | request completed in 11122 msecs
+... hundreds of lines ...
+     | request completed in 11672 msecs"""
+```
 
 The above uses Scala's support for [multi-line string literals](http://langref.org/scala/strings/declaring-strings/multiline).
 
 The next thing I needed to do was parse the above output, using a regular expression to extract just the milliseconds. There's several ways to create a regular expression in Scala. This is the one I like:
 
-\[bash gutter="false"\]val ReqCompletedRE = """\\s\*request completed in (\\d+) msecs"""r \[/bash\]
+```scala
+val ReqCompletedRE = """\s*request completed in (\d+) msecs"""r
+```
 
 There's a bit of magic in how the above string literal actually ends up becoming a regular expression. There's an [implicit conversion](http://www.scala-lang.org/node/130) in the Scala [Predef object](http://www.scala-lang.org/docu/files/api/scala/Predef$object.html) which turns a Java String into a RichString. RichString provides a 'r' method that returns a regular expression object. The members of the Predef object are automatically imported into every Scala module, so the Scala compiler will attempt to apply any conversions it finds in Predef when trying to resolve the 'r' method. So the above expression is creating a RichString from a String via an implicit conversion, then calling the 'r' method on it, which returns the regular expression.
 
 To apply the regular expression to a line of the output and to extract the milliseconds, we can use an expression like:
 
-\[bash gutter="false"\]scala> val ReqCompletedRE(msecs) = " request completed in 10451 msecs" msecs: String = 10451 \[/bash\]
+```scala
+scala> val ReqCompletedRE(msecs) = " request completed in 10451 msecs"
+msecs: String = 10451
+```
 
 msecs gets bound to the first group in the regular expression (the part that matches (\\d+)). This takes place via the [Scala extractors](http://www.scala-lang.org/node/112) feature - the scala [regular expression class](http://www.scala-lang.org/docu/files/api/scala/util/matching/Regex.html) defines an extractor which extracts the grouping results.
 
 The next step is to iterate over the lines of the output, extract the milliseconds, and turn the results into a list.
 
-\[bash gutter="false"\]scala> val msecsVals = rawData.lines.map { line => val ReqCompletedRE(msecs) = line; Integer.parseInt(msecs);} toList res11: List\[Int\] = List(10288, 10321, 10347, 10451, 10953, 11122, ..., 11672) \[/bash\]
+```scala
+scala> val msecsVals = rawData.lines.map { line => val ReqCompletedRE(msecs) = line; Integer.parseInt(msecs);} toList
+res11: List[Int] = List(10288, 10321, 10347, 10451, 10953, 11122, ..., 11672)
+```
 
 The above code is using the [RichString lines](http://www.scala-lang.org/docu/files/api/scala/runtime/RichString.html#lines), [Iterator.map method](http://www.scala-lang.org/docu/files/api/scala/Iterator.html#map%28%28A%29%3D%3EB%29), along with Scala closures.
 
 Finally, to get the simple statistics:
 
-\[bash gutter="false"\]scala> (msecsVals.sum / msecsVals.length, msecsVals.min, msecsVals.max) res21: (Int, Int, Int) = (10736,10288,11672) \[/bash\]
+```scala
+scala> (msecsVals.sum / msecsVals.length, msecsVals.min, msecsVals.max)
+res21: (Int, Int, Int) = (10736,10288,11672)
+```
 
 Putting the whole script together:
 
-\[bash gutter="false"\]val ReqCompletedRE = """\\s\*request completed in (\\d+) msecs"""r val msecsVals = rawData.lines.map { line => val ReqCompletedRE(msecs) = line; Integer.parseInt(msecs);} toList (msecsVals.sum / msecsVals.length, msecsVals.min, msecsVals.max) \[/bash\]
+```scala
+val ReqCompletedRE = """\s*request completed in (\d+) msecs"""r
+val msecsVals = rawData.lines.map { line => val ReqCompletedRE(msecs) = line; Integer.parseInt(msecs);} toList
+(msecsVals.sum / msecsVals.length, msecsVals.min, msecsVals.max)
+```

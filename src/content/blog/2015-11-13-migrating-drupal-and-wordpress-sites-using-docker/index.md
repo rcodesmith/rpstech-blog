@@ -20,7 +20,7 @@ Naturally, I decided to use docker to migrate my sites to another server, and to
 
 The overall configuration looks like this:
 
-[![rpsSitesDocker](images/rpsSitesDocker.png)](http://rpstechnologies.net/ron/blog/wp-content/uploads/2015/11/rpsSitesDocker.png)
+![rpsSitesDocker](images/rpsSitesDocker.png)
 
 The above diagram is inspired by [this dockerboard](http://dockerboard.github.io/marsoon/) tool. The tool works but the diagram required some style tweaking so I did it in OmniGraffle.
 
@@ -36,13 +36,26 @@ Following is a breakdown of each container and its configuration:
 - In the future, I may have this serve up the static sites rather than proxying to another nginx process. It'll still be needed to proxy the WordPress and Drupal sites
 - This image is based on the official [nginx](https://hub.docker.com/_/nginx/) image, with the addition of the Nginx configuration files into the Docker image. Dockerfile:
 
-\[code lang=text\] FROM nginx COPY conf.d /etc/nginx/conf.d \[/code\]
+```dockerfile
+FROM nginx
+COPY conf.d /etc/nginx/conf.d
+```
 
 - Each of the sites gets a separate Nginx configuration file under conf.d. They proxy to the specific site by name (mfywordpress in the example below). Here's what one of them looks like:
 
-\[code lang=text\] server { listen 80; server\_name www.mfyah.org mfyah.org;
+```nginx
+server {
+  listen 80;
+  server_name www.mfyah.org mfyah.org;
 
-location / { proxy\_pass http://mfywordpress:80; proxy\_set\_header Host $host; proxy\_set\_header X-Real-IP $remote\_addr; proxy\_set\_header X-Forwarded-For $proxy\_add\_x\_forwarded\_for; } } \[/code\]
+  location / {
+    proxy_pass http://mfywordpress:80;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  }
+}
+```
 
 ## latinchristmas - This is a static site hosted by nginx
 
@@ -50,9 +63,11 @@ location / { proxy\_pass http://mfywordpress:80; proxy\_set\_header Host $host; 
 - This is an image that is based on the official nginx image. The only thing it does in addition is add the static content to /usr/share/nginx/html
 - Dockerfile:
 
-\[code lang=text\] FROM nginx
+```dockerfile
+FROM nginx
 
-COPY WWW /usr/share/nginx/html \[/code\]
+COPY WWW /usr/share/nginx/html
+```
 
 ## mfy - Wordpress-based site
 
@@ -61,11 +76,13 @@ COPY WWW /usr/share/nginx/html \[/code\]
 - This container maps the directory /var/www/html to /var/lib/cont/mfywp on the host to store the WordPress site files. Having the site files on the host makes it easier to backup and ensures any changes to the site survive a restart.
 - Dockerfile:
 
-\[code lang=text\] FROM wordpress
+```dockerfile
+FROM wordpress
 
 RUN apt-get update && apt-get install -y libcurl4-openssl-dev
 
-RUN docker-php-ext-install curl \[/code\]
+RUN docker-php-ext-install curl
+```
 
 I won't go into the other WordPress-based containers. They're essentially the same.
 
@@ -79,13 +96,38 @@ I won't go into the other WordPress-based containers. They're essentially the sa
 
 As mentioned above, all of this is managed by Docker Compose. Following is a portion of the Docker Compose configuration file.
 
-\[code lang=text\] latinchristmas: image: somedockerrepo/someuser/latinchristmaswebsite:latest restart: always
+```yaml
+latinchristmas:
+  image: somedockerrepo/someuser/latinchristmaswebsite:latest
+  restart: always
 
-mfywordpress: image: somedockerrepo/someuser/mfy restart: always links: - db:mysql environment: WORDPRESS\_DB\_NAME: mfy volumes: - /var/lib/cont/mfywp:/var/www/html
+mfywordpress:
+  image: somedockerrepo/someuser/mfy
+  restart: always
+  links:
+    - db:mysql
+  environment:
+    WORDPRESS_DB_NAME: mfy
+  volumes:
+    - /var/lib/cont/mfywp:/var/www/html
 
-db: image: mariadb restart: always environment: MYSQL\_ROOT\_PASSWORD: PutSomethingHere volumes: - /var/lib/cont/db:/var/lib/mysql
+db:
+  image: mariadb
+  restart: always
+  environment:
+    MYSQL_ROOT_PASSWORD: PutSomethingHere
+  volumes:
+    - /var/lib/cont/db:/var/lib/mysql
 
-nginx: build: nginx restart: always ports: - "80:80" links: - latinchristmas - mfywordpress \[/code\]
+nginx:
+  build: nginx
+  restart: always
+  ports:
+    - "80:80"
+  links:
+    - latinchristmas
+    - mfywordpress
+```
 
 The WordPress-based site images are stored on a Docker repository. The proxy nginx image is built locally by Docker Compose.
 
@@ -94,7 +136,7 @@ The steps I took to get this all working on the server were roughly:
 - Install Docker if it's not already there: `sudo apt-get install lxc-docker`
 - Create the directories for the individual sites (e.g. /var/lib/cont/mfywp) and copy the site files over to them
 - Create the directory for the database under /var/lib/cont/db, empty
-- Copy the Docker Compose file and the nested nginx Dockerfile and configuration files over to the server. This is in a git repository, so I packaged it up as a tar file to send: `git archive --format=tar --prefix=rpstechServer/ HEAD &gt; send.tar`
+- Copy the Docker Compose file and the nested nginx Dockerfile and configuration files over to the server. This is in a git repository, so I packaged it up as a tar file to send: `git archive --format=tar --prefix=rpstechServer/ HEAD > send.tar`
 - If you're hosting your images in a private Docker repository, create a .dockercfg file on the server containing the credentials to your private Docker repository. Docker Compose will use this on the server when pulling the images from the Docker repository. If your images are all in a public repository, this isn't needed. You can remove the .dockercfg after the next step to avoid having the credentials on the server.
 - Run `docker-compose up -d`
 

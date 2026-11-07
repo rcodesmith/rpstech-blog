@@ -14,7 +14,7 @@ The latest version of the [Sculptor Generator](http://sculptorgenerator.org/) is
 
 The first step is to start the YourKit profiler. YourKit will start up with the welcome view, and will show any running Java processes, ready to attach to one of them.
 
-[![yourkitWelcome](images/yourkitWelcome.png)](http://rpstechnologies.net/ron/blog/wp-content/uploads/2013/10/yourkitWelcome.png)
+![yourkitWelcome](images/yourkitWelcome.png)
 
 Now we need to execute the Sculptor generator, first attaching it to the YourKit process. Sculptor code generation is typically executed as part of a Maven build, via the Sculptor Maven plugin. Since Maven isn't a long-running process, and we want to make sure to profile all of the code generation cycle, the best way to attach Sculptor to Maven is to do it at Maven startup via JVM command line arguments. Specifically [\-agentpath](http://www.yourkit.com/docs/yjp2013/help/agent.jsp) to attach the process to YourKit and enable profiling, and YourKit [startup options](http://www.yourkit.com/docs/yjp2013/help/startup_options.jsp) that can be used to enable different types of profiling, taking snapshots, etc.
 
@@ -29,7 +29,7 @@ The above will enable the [tracing profiling method](http://www.yourkit.com/docs
 
 You can control how YourKit performs tracing via Settings -> CPU Tracing... The only [tracing setting](http://www.yourkit.com/docs/yjp2013/help/tracing_settings.jsp) I changed was to disable adaptive tracing, which omits some small frequently called methods from profiling. This lessens the profiling overhead, but I'm not really concerned about that and want to make sure I'm getting complete results.
 
-[![yourKitTracingSettings](images/yourKitTracingSettings.png)](http://rpstechnologies.net/ron/blog/wp-content/uploads/2013/10/yourKitTracingSettings.png)
+![yourKitTracingSettings](images/yourKitTracingSettings.png)
 
 Now that the options are set up, run Maven in the Sculptor project to be profiled. In my case, the [library-example project](https://github.com/sculptor/sculptor/tree/master/sculptor-examples/library-example):
 
@@ -40,13 +40,13 @@ mvn sculptor:generate -Dsculptor.generator.force=true
 
 Once it's done executing, we can open the previously recorded snapshot via File->Open Snapshot.., and look at the different reports and views. This is what the call tree view looks like:
 
-[![yourKitCallTree](images/yourKitCallTree.png)](http://rpstechnologies.net/ron/blog/wp-content/uploads/2013/10/yourKitCallTree.png)
+![yourKitCallTree](images/yourKitCallTree.png)
 
 These results are fine, but the trace results are cluttered with many methods we're not interested in, since the entire Maven execution has been traced. The best option I found to only trace those methods we're interested in was to initially disable tracing, then use a [YourKit Trigger](http://www.yourkit.com/docs/yjp2013/help/triggers.jsp) to enable tracing on entry and exit of the main Sculptor generation method, org.sculptor.generator.SculptorGeneratorRunner.doRun.
 
 In YourKit, you can add a trigger via the "Trigger action on event" button.
 
-[![triggerActionOnEventSelection](images/triggerActionOnEventSelection.png)](http://rpstechnologies.net/ron/blog/wp-content/uploads/2013/10/triggerActionOnEventSelection.png)
+![triggerActionOnEventSelection](images/triggerActionOnEventSelection.png)
 
 The problem is this button seems to only be enabled if YourKit is actively profiling an application, and since the Maven execution isn't a long-running process, you can't configure it in time. The solution I used was to start Maven suspended in debug mode, configure the trigger, then kill Maven. Again, this can be done by adding some JVM arguments to MAVEN\_OPTS, and running Maven again:
 
@@ -57,7 +57,7 @@ export MAVEN_OPTS='-agentpath:/Applications/YourKit_Java_Profiler_2013_build_130
 
 Once YourKit is attached to the running Maven process, we can add the trigger:
 
-[![triggerActionOnEventDialog](images/triggerActionOnEventDialog.png)](http://rpstechnologies.net/ron/blog/wp-content/uploads/2013/10/triggerActionOnEventDialog.png)
+![triggerActionOnEventDialog](images/triggerActionOnEventDialog.png)
 
 To be able to use this trigger each time Sculptor is executed via Maven, we have to export the trigger configuration into a file, then when running Maven, specify the trigger file via another YourKit argument. We can export the trigger via Popup menu->Export Triggers...
 

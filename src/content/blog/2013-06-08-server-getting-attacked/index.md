@@ -44,7 +44,7 @@ The following can be used to lookup geographically where an IP is coming from: h
 Then make the changes active like:
 
 ```
-iptables-restore &lt; /etc/iptables.up.rules
+iptables-restore < /etc/iptables.up.rules
 ```
 
 On startup they'll get activated automatically due to network interface script which is automatically doing the restore above when interface is brought up

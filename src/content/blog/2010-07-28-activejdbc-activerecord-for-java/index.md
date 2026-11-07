@@ -15,17 +15,31 @@ Some examples of ActiveJDBC in action:
 
 **Persistent Book class definition:**
 
-\[java\] import activejdbc.Model;
+```java
+import activejdbc.Model;
 
-public class Book extends Model {} \[/java\]
+public class Book extends Model {}
+```
 
 **Adding a new Book:**
 
-\[java\] Book b = new Book(); b.set("isbn", "0321127420") .set("title", "Patterns of Enterprise Application Architecture") .set("author", "Martin Fowler") .set("publisher", "Addison-Wesley Professional"); b.saveIt(); \[/java\]
+```java
+Book b = new Book();
+b.set("isbn", "0321127420")
+  .set("title", "Patterns of Enterprise Application Architecture")
+  .set("author", "Martin Fowler")
+  .set("publisher", "Addison-Wesley Professional");
+b.saveIt();
+```
 
 **Paging through Addison-Wesley books in sorted order**
 
-\[java\] List<Book> books = Book.where("publisher = ?", ""Addison-Wesley Professional"); .offset(11) .limit(10) .orderBy("author asc"); \[/java\]
+```java
+List<Book> books = Book.where("publisher = ?", ""Addison-Wesley Professional");
+  .offset(11)
+  .limit(10)
+  .orderBy("author asc");
+```
 
 It looks like this framework strikes a good balance between a simple framework that works as you expect, and providing an elegant DSL for database access.  This is particularly impressive given Java as a language doesn't lend itself to implementing DSLs.
 

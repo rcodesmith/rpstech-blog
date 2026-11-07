@@ -20,17 +20,64 @@ The following changes should be made to the business tier project.
 
 First, the Groovy libraries and a Groovy compiler need to be added to the Maven build Traditionally this was done using the [GMaven plugin](http://docs.codehaus.org/display/GMAVEN/Home), but I came across [this post](http://contraptionsforprogramming.blogspot.com/2010/09/where-are-all-my-stubs.html) that describes using the eclipse-groovy plugin to jointly compile Java and Groovy together in a single pass. Much better.
 
-To use this, modify the pom.xml to add the springsource maven dependency and plugin repositories: \[xml\] <repositories> <repository> <id>springsource</id> <url>http://maven.springframework.org/snapshot</url> <releases> <enabled>true</enabled> </releases> <snapshots> <enabled>true</enabled> </snapshots> </repository> </repositories>
+To use this, modify the pom.xml to add the springsource maven dependency and plugin repositories:
 
-<pluginRepositories> <pluginRepository> <id>springsource</id> <url>http://maven.springframework.org/snapshot</url> </pluginRepository> </pluginRepositories> \[/xml\]
+```xml
+<repositories>
+    <repository>
+        <id>springsource</id>
+        <url>http://maven.springframework.org/snapshot</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+</repositories>
 
-Then update the maven-compiler plugin in the build/plugins section to use the groovy-ecilpse-compiler: \[xml\] <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-compiler-plugin</artifactId> <version>2.3.1</version> <configuration> <encoding>ISO-8859-1</encoding> <source>1.6</source> <target>1.6</target> <compilerId>groovy-eclipse-compiler</compilerId> <verbose>true</verbose> </configuration> <dependencies> <dependency> <groupId>org.codehaus.groovy</groupId> <artifactId>groovy-eclipse-compiler</artifactId> <version>0.0.1-SNAPSHOT</version> </dependency> </dependencies> </plugin> \[/xml\]
+<pluginRepositories>
+    <pluginRepository>
+        <id>springsource</id>
+        <url>http://maven.springframework.org/snapshot</url>
+    </pluginRepository>
+</pluginRepositories>
+```
+
+Then update the maven-compiler plugin in the build/plugins section to use the groovy-ecilpse-compiler:
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>2.3.1</version>
+    <configuration>
+        <encoding>ISO-8859-1</encoding>
+        <source>1.6</source>
+        <target>1.6</target>
+        <compilerId>groovy-eclipse-compiler</compilerId>
+        <verbose>true</verbose>
+    </configuration>
+    <dependencies>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-compiler</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</plugin>
+```
 
 Finally, add groovy to your dependencies:
 
-\[xml\] <dependency> <groupId>org.codehaus.groovy</groupId> <artifactId>groovy-all</artifactId> <version>1.7.5</version> <type>jar</type> </dependency>
-
-\[/xml\]
+```xml
+<dependency>
+    <groupId>org.codehaus.groovy</groupId>
+    <artifactId>groovy-all</artifactId>
+    <version>1.7.5</version>
+    <type>jar</type>
+</dependency>
+```
 
 **Xpand templates**
 
@@ -38,44 +85,116 @@ The next step is to create Xpand templates that will generate Groovy class files
 
 The code below defines an aspect for the generation of the DomainObject and Service sub-classes. Whenever these templates are invoked within Sculptor, the aspect below will be evaluated, deciding whether to generate Groovy code or to proceed with the normal Sculptor templates.
 
-Add to src/main/resources/templates/SpecialCases.xpt: \[xml\] «AROUND \*::domainObjectSubclass FOR DomainObject» «IF getHint("gapImpl") == "groovy"» «EXPAND Groovy::Groovy» «ELSE» «targetDef.proceed()» «ENDIF» «ENDAROUND»
+Add to src/main/resources/templates/SpecialCases.xpt:
 
-«AROUND \*::serviceImplSubclass FOR Service» «IF getHint("gapImpl") == "groovy"» «EXPAND Groovy::GroovyService» «ELSE» «targetDef.proceed()» «ENDIF» «ENDAROUND» \[/xml\]
+```text
+«AROUND *::domainObjectSubclass FOR DomainObject»
+        «IF getHint("gapImpl") == "groovy"»
+                «EXPAND Groovy::Groovy»
+        «ELSE»
+            «targetDef.proceed()»
+        «ENDIF»
+«ENDAROUND»
+
+«AROUND *::serviceImplSubclass FOR Service»
+        «IF getHint("gapImpl") == "groovy"»
+                «EXPAND Groovy::GroovyService»
+        «ELSE»
+            «targetDef.proceed()»
+        «ENDIF»
+«ENDAROUND»
+```
 
 Next, define the templates that will generate the actual Groovy code. Since Groovy syntax is practically a superset of Java, I was able to copy the code from the existing Sculptor templates (DomainObject.xpt and Service.xpt). The one key difference is where the code gets generated to - a new helper function groovyFileName returns a .groovy file name.
 
-Create src/main/resources/templates/Groovy.xpt: \[xml\] «REM» Templates to generate Sculptor implementation classes as Groovy «ENDREM»
+Create src/main/resources/templates/Groovy.xpt:
 
-«IMPORT sculptormetamodel» «EXTENSION extensions::helper» «EXTENSION extensions::groovyhelper» «EXTENSION extensions::properties»
+```text
+«REM»
+Templates to generate Sculptor implementation classes as Groovy
+«ENDREM»
 
-«DEFINE Groovy FOR DomainObject» «FILE groovyFileName(getDomainPackage() + "." + name) TO\_SRC» «javaHeader()» package «getDomainPackage()»;
+«IMPORT sculptormetamodel»
+«EXTENSION extensions::helper»
+«EXTENSION extensions::groovyhelper»
+«EXTENSION extensions::properties»
 
-«IF formatJavaDoc() == "" -» /\*\* \* Data transfer object for «name». Properties and associations are \* implemented in the generated base class {@link «getDomainPackage()».«name»Base}. \*/ «ELSE -» «formatJavaDoc()» «ENDIF -» «EXPAND templates::DomainObject::domainObjectSubclassAnnotations» public «getAbstractLitteral()»class «name» extends «name»Base { «EXPAND templates::DomainObject::serialVersionUID» «IF getLimitedConstructorParameters().isEmpty || getMinimumConstructorParameters().isEmpty»public«ELSE»protected«ENDIF» «name»() { }
+«DEFINE Groovy FOR DomainObject»
+«FILE groovyFileName(getDomainPackage() + "." + name) TO_SRC»
+«javaHeader()»
+package «getDomainPackage()»;
 
-«EXPAND templates::DomainObject::propertyConstructorSubclass» «EXPAND templates::DomainObject::limitedConstructor» «EXPAND templates::DomainObject::minimumConstructor»
+«IF formatJavaDoc() == "" -»
+/**
+ * Data transfer object for «name». Properties and associations are
+ * implemented in the generated base class {@link «getDomainPackage()».«name»Base}.
+ */
+«ELSE -»
+«formatJavaDoc()»
+«ENDIF -»
+«EXPAND templates::DomainObject::domainObjectSubclassAnnotations»
+public «getAbstractLitteral()»class «name» extends «name»Base {
+        «EXPAND templates::DomainObject::serialVersionUID»
+    «IF getLimitedConstructorParameters().isEmpty || getMinimumConstructorParameters().isEmpty»public«ELSE»protected«ENDIF» «name»() {
+    }
 
-} «ENDFILE» «ENDDEFINE»
+    «EXPAND templates::DomainObject::propertyConstructorSubclass»
+    «EXPAND templates::DomainObject::limitedConstructor»
+    «EXPAND templates::DomainObject::minimumConstructor»
 
-«DEFINE GroovyService FOR Service» «FILE groovyFileName(getServiceimplPackage() + "." + name + "Impl") TO\_SRC» «javaHeader()» package «getServiceimplPackage()»;
+}
+«ENDFILE»
+«ENDDEFINE»
 
-/\*\* \* Implementation of «name». \*/ «IF isSpringAnnotationToBeGenerated()» @org.springframework.stereotype.Service("«name.toFirstLower()»") «ENDIF» «IF webService» «EXPAND webServiceAnnotations» «ENDIF» public class «name»Impl extends «name»ImplBase {
 
-public «name»Impl() { } «EXPAND templates::Service::otherDependencies»
+«DEFINE GroovyService FOR Service»
+    «FILE groovyFileName(getServiceimplPackage() + "." + name + "Impl") TO_SRC»
+«javaHeader()»
+package «getServiceimplPackage()»;
 
-«EXPAND templates::Service::implMethod FOREACH operations.select(op | op.delegate == null && op.serviceDelegate == null) .reject(e|e.hasHint("EventSourcingScaffold")) » } «ENDFILE» «ENDDEFINE» \[/xml\]
+/**
+ * Implementation of «name».
+ */
+«IF isSpringAnnotationToBeGenerated()»
+@org.springframework.stereotype.Service("«name.toFirstLower()»")
+«ENDIF»
+«IF webService»
+«EXPAND webServiceAnnotations»
+«ENDIF»
+public class «name»Impl extends «name»ImplBase {
+
+    public «name»Impl() {
+    }
+    «EXPAND templates::Service::otherDependencies»
+
+    «EXPAND templates::Service::implMethod FOREACH operations.select(op | op.delegate == null && op.serviceDelegate == null)
+        .reject(e|e.hasHint("EventSourcingScaffold")) »
+}
+    «ENDFILE»
+«ENDDEFINE»
+```
 
 **Xtend helper function**
 
 The last step is to define the helper function used above to return the groovy file name.
 
-Create src/main/resources/extensions/groovyhelper.ext: \[java\] import sculptormetamodel;
+Create src/main/resources/extensions/groovyhelper.ext:
 
-String groovyFileName(String name) : name.replaceAll("\\\\.", "/") + ".groovy";
+```java
+import sculptormetamodel;
 
-\[/java\]
+String groovyFileName(String name) :
+    name.replaceAll("\\.", "/") + ".groovy";
+```
 
 **Model file**
 
 Finally, to use this, add the hint to whatever Service or Domain classes you need it for in your model file:
 
-\[java\] Service MyService { gap hint="gapImpl=groovy" ... } \[/java\]
+```text
+Service MyService {
+    gap
+    hint="gapImpl=groovy"
+    ...
+}
+```

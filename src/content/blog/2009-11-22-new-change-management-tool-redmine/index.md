@@ -29,13 +29,13 @@ So instead I went down the route of installing everything outside of cygwin.  H
 - I had to install older MySQL client library due to some Rails/MySQL library incompatibility (described [here](http://forums.aptana.com/viewtopic.php?f=20&t=7563&p=27407&hilit=libmysql.dll#p27407))
   
 - Create the database schema for Redmine via:  
-    \[bash gutter="false"\]rake redmine:load\_default\_data RAILS\_ENV=&amp;quot;production&amp;quot;\[/bash\]
+    `rake redmine:load_default_data RAILS_ENV="production"`
   
 - Populate a default configuration via:  
-    \[bash gutter="false"\]rake redmine:load\_default\_data RAILS\_ENV=&amp;quot;production&amp;quot;\[/bash\]
+    `rake redmine:load_default_data RAILS_ENV="production"`
   
 - You can then run Redmine via:  
-    \[bash gutter="false"\]ruby script/server webrick -e production\[/bash\]
+    `ruby script/server webrick -e production`
   
 
   

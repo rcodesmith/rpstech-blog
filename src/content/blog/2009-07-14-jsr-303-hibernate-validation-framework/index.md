@@ -15,11 +15,23 @@ From the JSR:
 
 I definetely agree - the validation metadata belongs to the domain class. This has been a hole in the Java space for quite a while. We've had validation frameworks such as [Commons Validator](http://commons.apache.org/validator/) (previously part of Struts) for many years, but we haven't had something that could be used across layers in a widespread manner. If you look at typical web applications with XML schemas , a persistence framework, and Web UI, you can easily see where you can end up re-implementing the same constraints multiple times.
 
-\[java\] public class Address { @NotNull private String line1; private String line2; private String zip; private String state; @Length(max = 20) @NotNull private String country;
+```java
+public class Address {
+    @NotNull private String line1;
+    private String line2;
+    private String zip;
+    private String state;
 
-@Range(min = -2, max = 50, message = "Floor out of range") public int floor;
+    @Length(max = 20)
+    @NotNull
+    private String country;
 
-... } \[/java\]
+    @Range(min = -2, max = 50, message = "Floor out of range")
+    public int floor;
+
+        ...
+}
+```
 
 As can be seen from the Hibernate Validator example above, the JSR allows you to specify the validation message as a part of the metadata. I think it's good to have the option, but I prefer to define the validation messages externally. I don't want to have to change my domain classes every time someone wants different wording on a validation message, and for those that need to support internationalization, you pretty much have no option but to define them externally.  From looking at the JSR, it looks like defining messages externally is also supported.
 

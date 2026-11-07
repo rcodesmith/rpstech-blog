@@ -23,6 +23,6 @@ Officially, IDEA only supports Grails 1.0, but it's working fine for me with som
 
 - Imported the existing Grails project into IDEA
 
-- After installing some Grails plugins (specifically, the google-chart plugin), I found that they weren't on the classpath and the grails launcher no longer worked. Apparently Grails 1.1 moved where the plugins are stored and IDEA hasn't been updated for this yet. To get around it, I added <home dir>/.grails/1.1/projects/<my project> to the module's content root for my project, and added the plugin's source directory (plugins/google-chart-0.4.8/src/groovy in my case) as a source folder within the added content root.
+- After installing some Grails plugins (specifically, the google-chart plugin), I found that they weren't on the classpath and the grails launcher no longer worked. Apparently Grails 1.1 moved where the plugins are stored and IDEA hasn't been updated for this yet. To get around it, I added `<home dir>/.grails/1.1/projects/<my project>` to the module's content root for my project, and added the plugin's source directory (plugins/google-chart-0.4.8/src/groovy in my case) as a source folder within the added content root.
 
 The grails app launcher is working for me, and I'm not getting the compile problems I was getting before.

@@ -23,7 +23,9 @@ After working with MDA tools for a while, it's common to want to customize the c
 
 **Edit andromda.xml and insert a merge location pointing to the directory where you're storing your customized templates** The merge location tells AndroMDA where to look for customized templates or other code generation files. Edit the section of the mda/mda/src/main/config/andromda.xml file corresponding to the specific cartridge you are customizing (spring, hibernate, etc). In my case, I insert the following line into the spring section:
 
+```xml
 <property name="mergeLocation">${conf.dir}/custom/spring</property>
+```
 
 **Edit your copy of the template, making whatever changes you want**
 
